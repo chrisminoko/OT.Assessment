@@ -20,7 +20,7 @@ namespace OT.Assessment.App.Controllers
         }
 
         [HttpPost]
-        [Route("CreateOlayer")]
+        [Route("AddPlayer")]
         public async Task<IActionResult> CreatePlayerAsync([FromBody] Player player)
         {
             if (player == null)
@@ -30,7 +30,7 @@ namespace OT.Assessment.App.Controllers
 
             try
             {
-                await _playerService.CreatePlayerAsync(player);
+                await _playerService.CreatePlayer(player);
 
                 return CreatedAtAction(nameof(CreatePlayerAsync), new { id = player.Id }, player);
             }
@@ -44,7 +44,7 @@ namespace OT.Assessment.App.Controllers
         [Route("GetPlayerbyId")]
         public async Task<IActionResult> GetPlayerbyId(Guid Id) 
         {
-         var response = await _playerService.GetUserAsync(Id);
+         var response = await _playerService.GetPlayerById(Id);
         if (response == null)
             {
                 return BadRequest();

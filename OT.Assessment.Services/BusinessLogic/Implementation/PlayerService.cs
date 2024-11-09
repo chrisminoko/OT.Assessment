@@ -1,4 +1,5 @@
 ﻿using OT.Assessment.Model.Entities;
+using OT.Assessment.Repository.Implementation;
 using OT.Assessment.Repository.Interface;
 using OT.Assessment.Services.BusinessLogic.Interfaces;
 using System;
@@ -11,45 +12,58 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
 {
     public class PlayerService : IPlayerService
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly GenericRepository<Player> _repository;
+
         public PlayerService(IUnitOfWork unitOfWork)
         {
-            _unitOfWork = unitOfWork;
+            _repository = new GenericRepository<Player>(unitOfWork);
         }
-        public async Task CreatePlayerAsync(Player user)
+
+        public async Task<int> CreatePlayer(Player player)
         {
-            try
-            {
-                _unitOfWork.BeginTransaction();
+            if (player == null)
+                throw new ArgumentNullException(nameof(player));
 
-                await _unitOfWork.Commands.ExecuteAsync(
-                    "INSERT INTO Players (Id, UserName, CreatedDate,LastModifiedDate) VALUES (@Id, @UserName,@CreatedDate,@LastModifiedDate)",
-                    user
-                );
-
-                _unitOfWork.Commit();
-            }
-            catch
-            {
-                _unitOfWork.Rollback();
-                throw;
-            }
+            return await _repository.CreateAsync(player);
         }
 
-        public async Task<Player> GetUserAsync(Guid id)
+        public async Task<int> DeletePlayer(Guid id)
         {
-            try
-            {
-                return await _unitOfWork.Queries.QueryFirstOrDefaultAsync<Player>(
-                              "SELECT * FROM Players WHERE Id = @Id",
-                              new { Id = id }
-                          );
-            }
-            catch (Exception ex )
-            {
+            if (!await PlayerExists(id))
+                throw new NotFoundException($"Player with ID {id} not found");
 
-                throw;
-            }
+            return await _repository.DeleteAsync(id);
         }
+
+        public async Task<IEnumerable<Player>> GetAllPlayers()
+        {
+            return await _repository.GetAllAsync();
+        }
+
+        public async Task<Player> GetPlayerById(Guid id)
+        {
+            return await _repository.GetByIdAsync(id);
+        }
+
+        public async Task<bool> PlayerExists(Guid id)
+        {
+            return await _repository.ExistsAsync(id);
+        }
+
+        public async Task<int> UpdatePlayer(Player player)
+        {
+            if (player == null)
+                throw new ArgumentNullException(nameof(player));
+
+            if (!await PlayerExists(player.Id))
+                throw new NotFoundException($"Player with ID {player.Id} not found");
+
+            return await _repository.UpdateAsync(player);
+        }
+    }
+
+    public class NotFoundException : Exception
+    {
+        public NotFoundException(string message) : base(message) { }
     }
 }

@@ -9,7 +9,11 @@ namespace OT.Assessment.Services.BusinessLogic.Interfaces
 {
     public interface IPlayerService
     {
-        Task CreatePlayerAsync(Player user);
-        Task<Player> GetUserAsync(Guid id);
+        Task<Player> GetPlayerById(Guid id);
+        Task<bool> PlayerExists(Guid id);
+        Task<IEnumerable<Player>> GetAllPlayers();
+        Task<int> CreatePlayer(Player player);
+        Task<int> UpdatePlayer(Player player);
+        Task<int> DeletePlayer(Guid id);
     }
 }
