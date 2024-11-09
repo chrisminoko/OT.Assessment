@@ -10,14 +10,10 @@ namespace OT.Assessment.Migrations
         public AppDbContext CreateDbContext(string[] args)
         {
             var configuration = new ConfigurationBuilder()
-                           .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../OT.Assessment.App"))
-                           .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                           .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true)
-                           .Build();
-
-            // For debugging purposes
-            Console.WriteLine("Current Directory: " + Directory.GetCurrentDirectory());
-            Console.WriteLine("Config Base Path: " + Path.Combine(Directory.GetCurrentDirectory(), "../../OT.Assessment.App"));
+                .SetBasePath(Directory.GetCurrentDirectory())  // Look in current directory
+                .AddJsonFile("appsettings.json", optional: false)
+                .AddJsonFile($"appsettings.Development.json", optional: true)
+                .Build();
 
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
             var connectionString = configuration.GetConnectionString("DatabaseConnection")

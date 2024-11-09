@@ -20,6 +20,10 @@ namespace OT.Assessment.App.Controllers
                  .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                  .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true)
                  .Build();
+            
+            var connectionString = configuration.GetConnectionString("DatabaseConnection")
+                ?? throw new InvalidOperationException("Connection string 'DatabaseConnection' not found.");
+
             return Ok();
 
         }
