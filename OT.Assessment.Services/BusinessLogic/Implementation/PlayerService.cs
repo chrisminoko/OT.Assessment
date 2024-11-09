@@ -1,8 +1,10 @@
-﻿using OT.Assessment.Core.Helpers;
+﻿using OT.Assessment.Core.Enums;
+using OT.Assessment.Core.Helpers;
 using OT.Assessment.Model.Entities;
 using OT.Assessment.Repository.Implementation;
 using OT.Assessment.Repository.Interface;
 using OT.Assessment.Services.BusinessLogic.Interfaces;
+using OT.Assessment.Services.Producer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +17,11 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
     public class PlayerService : IPlayerService
     {
         private readonly GenericRepository<Player> _repository;
-
-        public PlayerService(IUnitOfWork unitOfWork)
+        private readonly IMessageProducer _messageProducer;
+        public PlayerService(IUnitOfWork unitOfWork, IMessageProducer messageProducer)
         {
             _repository = new GenericRepository<Player>(unitOfWork);
+            _messageProducer = messageProducer;
         }
 
         public async Task<int> CreatePlayer(Player player)
@@ -26,6 +29,7 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
             if (player == null)
                 throw new ArgumentNullException(nameof(player));
 
+            await _messageProducer.SendMessage(player,EventQueue.CreatePlayer);
             return await _repository.CreateAsync(player);
         }
 
