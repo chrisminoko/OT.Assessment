@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OT.Assessment.Model.Entities;
+using OT.Assessment.Services.BusinessLogic.Interfaces;
 namespace OT.Assessment.App.Controllers
 {
   
@@ -11,23 +13,46 @@ namespace OT.Assessment.App.Controllers
 
         //GET api/player/topSpenders?count=10
         //
-
-        [HttpPost("VerifyPayent")]
-        public async Task<IActionResult> Test(string reference)
+        private readonly IPlayerService _playerService;
+        public PlayerController(IPlayerService playerService)
         {
-            var configuration = new ConfigurationBuilder()
-                 .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../OT.Assessment.App"))
-                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                 .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true)
-                 .Build();
-            
-            var connectionString = configuration.GetConnectionString("DatabaseConnection")
-                ?? throw new InvalidOperationException("Connection string 'DatabaseConnection' not found.");
-
-            return Ok();
-
+            _playerService = playerService;
         }
 
-      
+        [HttpPost]
+        [Route("CreateOlayer")]
+        public async Task<IActionResult> CreatePlayerAsync([FromBody] Player player)
+        {
+            if (player == null)
+            {
+                return BadRequest("Player data is required.");
+            }
+
+            try
+            {
+                await _playerService.CreatePlayerAsync(player);
+
+                return CreatedAtAction(nameof(CreatePlayerAsync), new { id = player.Id }, player);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while creating the player.");
+            }
+        }
+
+        [HttpGet]
+        [Route("GetPlayerbyId")]
+        public async Task<IActionResult> GetPlayerbyId(Guid Id) 
+        {
+         var response = await _playerService.GetUserAsync(Id);
+        if (response == null)
+            {
+                return BadRequest();
+            }
+        
+        return Ok(response);
+        }
+
+
     }
 }

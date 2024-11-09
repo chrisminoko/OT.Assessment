@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OT.Assessment.Consumer", "src\OT.Assessment.Consumer\OT.Assessment.Consumer.csproj", "{FEB40B93-D586-4600-AAC9-DD0960D0083D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OT.Assessment.App", "src\OT.Assessment.App\OT.Assessment.App.csproj", "{9C47B574-9401-48DD-AB40-48F0C9BA699A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{151B87F6-EE9B-4286-829D-6917BB479F11} = {151B87F6-EE9B-4286-829D-6917BB479F11}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OT.Assessment.Tester", "test\OT.Assessment.Tester\OT.Assessment.Tester.csproj", "{BF0CDF90-B607-4710-9F26-67E23498C865}"
 EndProject
@@ -19,13 +22,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6FA7DAF4-446
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tester", "tester", "{B4795B8C-CE52-404F-AA64-6D8AA8734A96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OT.Assessment.Model", "OT.Assessment.Model\OT.Assessment.Model.csproj", "{161559BD-BE9E-4082-9CD1-52A6F3B0976B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OT.Assessment.Model", "OT.Assessment.Model\OT.Assessment.Model.csproj", "{161559BD-BE9E-4082-9CD1-52A6F3B0976B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OT.Assessment.Migrations", "OT.Assessment.Migrations\OT.Assessment.Migrations.csproj", "{4B0EF814-777E-4DBB-8174-8E61C606B93E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OT.Assessment.Migrations", "OT.Assessment.Migrations\OT.Assessment.Migrations.csproj", "{4B0EF814-777E-4DBB-8174-8E61C606B93E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OT.Assessment.Repository", "OT.Assessment.Repository\OT.Assessment.Repository.csproj", "{151B87F6-EE9B-4286-829D-6917BB479F11}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OT.Assessment.Repository", "OT.Assessment.Repository\OT.Assessment.Repository.csproj", "{151B87F6-EE9B-4286-829D-6917BB479F11}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OT.Assessment.Core", "OT.Assessment.Core\OT.Assessment.Core.csproj", "{00640D81-D430-4362-8DE6-40C1AF37D753}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OT.Assessment.Core", "OT.Assessment.Core\OT.Assessment.Core.csproj", "{00640D81-D430-4362-8DE6-40C1AF37D753}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OT.Assessment.Services", "OT.Assessment.Services\OT.Assessment.Services.csproj", "{669E44EF-6C6A-4901-8021-FE8A729F14D9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +66,10 @@ Global
 		{00640D81-D430-4362-8DE6-40C1AF37D753}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00640D81-D430-4362-8DE6-40C1AF37D753}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00640D81-D430-4362-8DE6-40C1AF37D753}.Release|Any CPU.Build.0 = Release|Any CPU
+		{669E44EF-6C6A-4901-8021-FE8A729F14D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{669E44EF-6C6A-4901-8021-FE8A729F14D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{669E44EF-6C6A-4901-8021-FE8A729F14D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{669E44EF-6C6A-4901-8021-FE8A729F14D9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -73,6 +82,7 @@ Global
 		{4B0EF814-777E-4DBB-8174-8E61C606B93E} = {6FA7DAF4-446B-4610-9EDF-6E418255B176}
 		{151B87F6-EE9B-4286-829D-6917BB479F11} = {6FA7DAF4-446B-4610-9EDF-6E418255B176}
 		{00640D81-D430-4362-8DE6-40C1AF37D753} = {6FA7DAF4-446B-4610-9EDF-6E418255B176}
+		{669E44EF-6C6A-4901-8021-FE8A729F14D9} = {6FA7DAF4-446B-4610-9EDF-6E418255B176}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C56C9633-4971-45FE-9CB3-E2F07E649A77}
