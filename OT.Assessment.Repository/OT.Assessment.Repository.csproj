@@ -10,4 +10,8 @@
     <PackageReference Include="Dapper" Version="2.1.35" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\OT.Assessment.Core\OT.Assessment.Core.csproj" />
+  </ItemGroup>
+
 </Project>

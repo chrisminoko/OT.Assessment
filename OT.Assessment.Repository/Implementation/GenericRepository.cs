@@ -1,7 +1,9 @@
-﻿using OT.Assessment.Repository.Interface;
+﻿using OT.Assessment.Core.Helpers;
+using OT.Assessment.Repository.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,12 +17,12 @@ namespace OT.Assessment.Repository.Implementation
         public GenericRepository(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _tableName = typeof(T).Name; // Assumes table name matches class name
+            _tableName = GetTableName(); // Assumes table name matches class name
         }
 
         public async Task<T> GetByIdAsync(object id)
         {
-            var query = $"SELECT * FROM {_tableName}s WHERE Id = @Id";
+            var query = $"SELECT * FROM {_tableName} WHERE Id = @Id";
             return await _unitOfWork.Queries.QueryFirstOrDefaultAsync<T>(query, new { Id = id });
         }
 
@@ -40,9 +42,9 @@ namespace OT.Assessment.Repository.Implementation
         public async Task<int> CreateAsync(T entity)
         {
             var properties = typeof(T).GetProperties()
-                .Where(p => p.Name != "Id")
+                //.Where(p => p.Name != "Id")
                 .ToList();
-
+            
             var columns = string.Join(", ", properties.Select(p => p.Name));
             var parameters = string.Join(", ", properties.Select(p => $"@{p.Name}"));
 
@@ -81,6 +83,18 @@ namespace OT.Assessment.Repository.Implementation
         public async Task<int> RunProcedureNonQueryAsync(string procName, object parameters = null)
         {
             return await _unitOfWork.Commands.ExecuteAsync($"EXEC {procName}", parameters);
+        }
+
+        private string GetTableName()
+        {
+            // Get the type of T
+            var type = typeof(T);
+
+            // Try to get the TableAttribute from System.ComponentModel.DataAnnotations.Schema
+            var tableAttribute = type.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.TableAttribute>();
+
+            // If the attribute exists, use its Name property, otherwise fall back to the class name
+            return tableAttribute?.Name ?? type.Name;
         }
     }
 }

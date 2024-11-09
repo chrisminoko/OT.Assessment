@@ -1,10 +1,12 @@
-﻿using OT.Assessment.Model.Entities;
+﻿using OT.Assessment.Core.Helpers;
+using OT.Assessment.Model.Entities;
 using OT.Assessment.Repository.Implementation;
 using OT.Assessment.Repository.Interface;
 using OT.Assessment.Services.BusinessLogic.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -60,6 +62,8 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
 
             return await _repository.UpdateAsync(player);
         }
+
+       
     }
 
     public class NotFoundException : Exception
