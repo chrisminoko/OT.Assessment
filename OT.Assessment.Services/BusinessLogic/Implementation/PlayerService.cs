@@ -8,6 +8,7 @@ using OT.Assessment.Services.Producer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,8 +36,11 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
 
         public async Task<int> DeletePlayer(Guid id)
         {
+            var players = await _repository.GetByIdAsync(id);
             if (!await PlayerExists(id))
-                throw new NotFoundException($"Player with ID {id} not found");
+              
+                await _messageProducer.SendMessage(players, EventQueue.CasinoWager);
+            throw new NotFoundException($"Player with ID {id} not found");
 
             return await _repository.DeleteAsync(id);
         }

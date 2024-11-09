@@ -13,6 +13,13 @@
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
+		<PackageReference Include="RabbitMQ.Client" Version="7.0.0" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\OT.Assessment.Core\OT.Assessment.Core.csproj" />
+	  <ProjectReference Include="..\..\OT.Assessment.Model\OT.Assessment.Model.csproj" />
 	</ItemGroup>
 
 

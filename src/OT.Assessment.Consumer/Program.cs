@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration(config =>
@@ -9,8 +11,10 @@ var host = Host.CreateDefaultBuilder(args)
     })
     .ConfigureServices((context, services) =>
     {
-        //configure services
-      
+        // Register the RabbitMQ hosted service
+        services.AddHostedService<RabbitMQHostedService>();
+
+        // Add any other service registrations here
     })
     .Build();
 

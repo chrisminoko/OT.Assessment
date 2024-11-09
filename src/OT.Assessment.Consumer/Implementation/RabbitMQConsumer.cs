@@ -1,0 +1,124 @@
+﻿using OT.Assessment.Core.Enums;
+using OT.Assessment.Model.Entities;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using System.Text;
+using System.Text.Json;
+
+public class RabbitMQHostedService : IHostedService
+{
+    private readonly ILogger<RabbitMQHostedService> _logger;
+    private IConnection? _connection;
+    private readonly CancellationTokenSource _cancellationTokenSource;
+
+    public RabbitMQHostedService(ILogger<RabbitMQHostedService> logger)
+    {
+        _logger = logger;
+        _cancellationTokenSource = new CancellationTokenSource();
+    }
+
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("RabbitMQ Consumer Service starting...");
+
+        var factory = new ConnectionFactory
+        {
+            HostName = "localhost",
+            Port = 5672,
+            UserName = "guest",
+            Password = "guest",
+            VirtualHost = "/",
+            ClientProvidedName = "EventConsumer"
+        };
+
+        _connection = await factory.CreateConnectionAsync();
+
+        await using var channel = await _connection.CreateChannelAsync();
+        var queueNames = Enum.GetNames(typeof(EventQueue));
+
+        foreach (var queueName in queueNames)
+        {
+            await channel.QueueDeclareAsync(
+                queue: queueName,
+                durable: false,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+
+            var consumer = new AsyncEventingBasicConsumer(channel);
+            consumer.ReceivedAsync += async (sender, args) =>
+            {
+                try
+                {
+                    var body = args.Body.ToArray();
+                    var message = Encoding.UTF8.GetString(body);
+                    _logger.LogInformation("Received message from queue {QueueName}: {Message}", queueName, message);
+
+                    await ProcessMessage(queueName, message);
+                    await channel.BasicAckAsync(args.DeliveryTag, multiple: false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing message from queue {QueueName}", queueName);
+                    await channel.BasicNackAsync(args.DeliveryTag, multiple: false, requeue: false);
+                }
+            };
+
+            await channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
+            await channel.BasicConsumeAsync(
+                queue: queueName,
+                autoAck: false,
+                consumer: consumer);
+
+            _logger.LogInformation("Started consuming from queue: {QueueName}", queueName);
+        }
+
+        // Keep the service running
+        while (!_cancellationTokenSource.Token.IsCancellationRequested)
+        {
+            await Task.Delay(1000, _cancellationTokenSource.Token);
+        }
+    }
+
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("RabbitMQ Consumer Service stopping...");
+        _cancellationTokenSource.Cancel();
+
+        if (_connection != null && _connection.IsOpen)
+        {
+            await _connection.CloseAsync();
+            _connection.Dispose();
+        }
+
+        _cancellationTokenSource.Dispose();
+        _logger.LogInformation("RabbitMQ Consumer Service stopped");
+    }
+
+    private async Task ProcessMessage(string queueName, string message)
+    {
+        if (Enum.TryParse<EventQueue>(queueName, out var eventQueue))
+        {
+            switch (eventQueue)
+            {
+                case EventQueue.CreatePlayer:
+                    var player = JsonSerializer.Deserialize<Player>(message);
+                    await ProcessCreatePlayer(player);
+                    break;
+
+                default:
+                    throw new ArgumentException($"Unknown event type: {queueName}");
+            }
+        }
+    }
+
+    private async Task ProcessCreatePlayer(Player player)
+    {
+        if (player == null) return;
+
+        _logger.LogInformation("Processing player creation: {PlayerId}", player.Id);
+        await Task.CompletedTask;
+    }
+}
+
+
