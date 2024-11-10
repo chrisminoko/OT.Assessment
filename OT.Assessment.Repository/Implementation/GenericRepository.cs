@@ -67,7 +67,7 @@ namespace OT.Assessment.Repository.Implementation
             {
                 _unitOfWork.Rollback();
                 return -1;
-                throw;
+                throw ex;
             }
 
         }

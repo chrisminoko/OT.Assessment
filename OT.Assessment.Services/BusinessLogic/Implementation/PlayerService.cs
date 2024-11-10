@@ -146,6 +146,7 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
             try
             {
                 //var validations = await ValidateCasinoWagerRequest(casinoWager);
+                casinoWager.WagerId= Guid.NewGuid();
                 casinoWager.LastModifiedDate = DateTime.UtcNow;
                 casinoWager.CreatedDate = DateTime.UtcNow;
                 var result = await _casinoWagerRepository.CreateAsync(casinoWager);

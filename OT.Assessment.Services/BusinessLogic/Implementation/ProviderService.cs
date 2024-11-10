@@ -38,6 +38,7 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
             try
             {
                 var gameEntity = _mapper.Map<Game>(request);
+                gameEntity.GameId = Guid.NewGuid();
                 gameEntity.CreatedDate = DateTime.UtcNow;
                 gameEntity.LastModifiedDate = DateTime.UtcNow;
 
@@ -45,7 +46,7 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
                 if (result != 1)
                     return new BaseResponse { IsSuccessful = true, Message = Responses.FailedToPublish };
 
-                return new BaseResponse { IsSuccessful = true, Message = Responses.GeneralError };
+                return new BaseResponse { IsSuccessful = true, Message = Responses.GeneralSuccess };
             }
             catch (Exception ex)
             {
@@ -71,7 +72,7 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
                 if (result != 1)
                     return new BaseResponse { IsSuccessful = true, Message = Responses.FailedToPublish };
 
-                return new BaseResponse { IsSuccessful = true, Message = Responses.GeneralError };
+                return new BaseResponse { IsSuccessful = true, Message = Responses.GeneralSuccess };
             }
             catch (Exception ex)
             {
