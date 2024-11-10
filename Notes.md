@@ -40,3 +40,10 @@ Receives player casino wager events to publish to the local RabbitMQ queue.
 I was very concerned about this part: "receives player casino wager events to publish to the local RabbitMQ queue." Should I just publish and move on? How can I notify the requester about the status of their request?
 It seems like my best option is to "publish and forget," since I don't want the requester to have to wait for RabbitMQ to finish processing.
 The lest i did was to just check if the publishing to the queue was successful and return an appropriate response. However, this might be misleading, as the publish can succeed, but issues could still arise later, such as validation errors or unexpected problems during SQL operations.
+
+
+## RabbitMQ Structure :
+
+I watched a lot of videos on how to do this here, I did not really know some of the best practices on how to implement it. I watched this here : https://www.youtube.com/watch?v=bfVddTJNiAw&t=2827s ,https://www.youtube.com/watch?v=LHYOBHR2Ms4&t=629s,
+They really helped set up the foundation but none of them did it in way that is dynamic to consume different topics: so I did some googling and with some of my experience with Kafka , I tried implemnting a similar pattern am used too:
+I would have wanted to add retrial but I want to finish before Monday - My upcomming week will be busy.

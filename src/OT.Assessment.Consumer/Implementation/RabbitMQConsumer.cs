@@ -131,7 +131,6 @@ public class RabbitMQHostedService : IHostedService
     {
         if (player == null) return;
 
-        //_logger.LogInformation("Processing player creation: {PlayerId}", player.Id);
         await Task.CompletedTask;
     }
 }
