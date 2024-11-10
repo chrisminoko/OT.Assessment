@@ -1,4 +1,6 @@
-﻿using OT.Assessment.Core.Enums;
+﻿using Microsoft.Extensions.Logging;
+using OT.Assessment.Core.Enums;
+using OT.Assessment.Model.Response;
 using OT.Assessment.Services.Producer.Connection;
 using RabbitMQ.Client;
 using System;
@@ -13,11 +15,13 @@ namespace OT.Assessment.Services.Producer
     public class RabbitMqProducer : IMessageProducer
     {
         private readonly IRabbitMqConnection _connection;
-        public RabbitMqProducer(IRabbitMqConnection connection)
+        private readonly ILogger<RabbitMqProducer> _logger;
+        public RabbitMqProducer(IRabbitMqConnection connection, ILogger<RabbitMqProducer> logger)
         {
             _connection = connection;
+            _logger = logger;
         }
-        public async Task SendMessage<T>(T message, EventQueue QueueName)
+        public async Task<Result> SendMessage<T>(T message, EventQueue QueueName)
         {
             try
             {
@@ -40,12 +44,14 @@ namespace OT.Assessment.Services.Producer
                      routingKey: QueueName.ToString(),
                      body: body
                  );
+
+                return Result.Success();
             }
             catch (Exception ex)
             {
-                
-                Console.WriteLine($"Error sending message: {ex.Message}");
-                throw; 
+
+                _logger.LogError(ex, "Error publishing message to RabbitMQ");
+                return Result.Failure("Failed to publish message");
             }
         }
     }

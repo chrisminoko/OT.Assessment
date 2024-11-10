@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace OT.Assessment.Model.Entities
 {
+    [TableAttribute("CasinoWagerS")]
     public class CasinoWager : BaseEntity
     {
         public Guid WagerId { get; set; }

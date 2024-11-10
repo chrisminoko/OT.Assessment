@@ -1,6 +1,9 @@
 ﻿using OT.Assessment.Core.Enums;
 using OT.Assessment.Core.Helpers;
+using OT.Assessment.Model.Dto;
 using OT.Assessment.Model.Entities;
+using OT.Assessment.Model.Request;
+using OT.Assessment.Model.Response;
 using OT.Assessment.Repository.Implementation;
 using OT.Assessment.Repository.Interface;
 using OT.Assessment.Services.BusinessLogic.Interfaces;
@@ -25,29 +28,18 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
             _messageProducer = messageProducer;
         }
 
-        public async Task<int> CreatePlayer(Player player)
+        public async Task<BaseResponse> CreateCasinoWagerAsync(CasinoWagerRequest request)
         {
-            if (player == null)
-                throw new ArgumentNullException(nameof(player));
-
-            await _messageProducer.SendMessage(player,EventQueue.CreatePlayer);
-            return await _repository.CreateAsync(player);
-        }
-
-        public async Task<int> DeletePlayer(Guid id)
-        {
-            var players = await _repository.GetByIdAsync(id);
-            if (!await PlayerExists(id))
-              
-                await _messageProducer.SendMessage(players, EventQueue.CasinoWager);
-            throw new NotFoundException($"Player with ID {id} not found");
-
-            return await _repository.DeleteAsync(id);
-        }
-
-        public async Task<IEnumerable<Player>> GetAllPlayers()
-        {
-            return await _repository.GetAllAsync();
+            try
+            {
+                var results = await _messageProducer.SendMessage(request, EventQueue.CasinoWager);
+                return new BaseResponse { Id = request.WagerId, IsSuccessful = true };
+            }
+            catch (Exception)
+            {
+                return new BaseResponse { Id= Guid.Empty,IsSuccessful= false };
+               
+            }
         }
 
         public async Task<Player> GetPlayerById(Guid id)
@@ -55,20 +47,19 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
             return await _repository.GetByIdAsync(id);
         }
 
+        public Task<PaginatedResponse<PlayerWagerDto>> GetPlayerCasinoWagersAsync(Guid playerId, int pageSize, int page)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<TopSpenderDto>> GetTopSpendersAsync(int count)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<bool> PlayerExists(Guid id)
         {
             return await _repository.ExistsAsync(id);
-        }
-
-        public async Task<int> UpdatePlayer(Player player)
-        {
-            if (player == null)
-                throw new ArgumentNullException(nameof(player));
-
-            //if (!await PlayerExists(player.Id))
-            //    throw new NotFoundException($"Player with ID {player.Id} not found");
-
-            return await _repository.UpdateAsync(player);
         }
 
        

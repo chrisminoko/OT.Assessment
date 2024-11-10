@@ -1,4 +1,5 @@
 ﻿using OT.Assessment.Core.Enums;
+using OT.Assessment.Model.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,6 @@ namespace OT.Assessment.Services.Producer
 {
     public interface IMessageProducer
     {
-        Task SendMessage<T>(T message, EventQueue QueueName);
+        Task<Result> SendMessage<T>(T message, EventQueue QueueName);
     }
 }

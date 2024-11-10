@@ -1,4 +1,7 @@
-﻿using OT.Assessment.Model.Entities;
+﻿using OT.Assessment.Model.Dto;
+using OT.Assessment.Model.Entities;
+using OT.Assessment.Model.Request;
+using OT.Assessment.Model.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +12,10 @@ namespace OT.Assessment.Services.BusinessLogic.Interfaces
 {
     public interface IPlayerService
     {
+        Task<BaseResponse> CreateCasinoWagerAsync(CasinoWagerRequest request);
+        Task<PaginatedResponse<PlayerWagerDto>> GetPlayerCasinoWagersAsync(Guid playerId, int pageSize, int page);
+        Task<IEnumerable<TopSpenderDto>> GetTopSpendersAsync(int count);
         Task<Player> GetPlayerById(Guid id);
         Task<bool> PlayerExists(Guid id);
-        Task<IEnumerable<Player>> GetAllPlayers();
-        Task<int> CreatePlayer(Player player);
-        Task<int> UpdatePlayer(Player player);
-        Task<int> DeletePlayer(Guid id);
     }
 }
