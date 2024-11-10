@@ -1,4 +1,5 @@
-﻿using OT.Assessment.Core.Enums;
+﻿using Microsoft.Extensions.Configuration;
+using OT.Assessment.Core.Enums;
 using OT.Assessment.Model.Entities;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -9,12 +10,26 @@ public class RabbitMQHostedService : IHostedService
 {
     private readonly ILogger<RabbitMQHostedService> _logger;
     private IConnection? _connection;
+    private readonly IConfiguration _configuration;
     private readonly CancellationTokenSource _cancellationTokenSource;
+    private readonly string _hostName;
+    private readonly int _portNumber;
+    private readonly string _userName;
+    private readonly string _password;
+    private readonly string _virtualHost;
+    private readonly string _clientProviderName;
 
-    public RabbitMQHostedService(ILogger<RabbitMQHostedService> logger)
+    public RabbitMQHostedService(ILogger<RabbitMQHostedService> logger, IConfiguration configuration)
     {
         _logger = logger;
         _cancellationTokenSource = new CancellationTokenSource();
+        _configuration = configuration;
+        _hostName = _configuration.GetValue<string>("RabbitMQ:HostName");
+        _portNumber = _configuration.GetValue<int>("RabbitMQ:Port");
+        _userName = _configuration.GetValue<string>("RabbitMQ:UserName");
+        _password = _configuration.GetValue<string>("RabbitMQ:Password");
+        _virtualHost = _configuration.GetValue<string>("RabbitMQ:VirtualHost");
+        _clientProviderName = _configuration.GetValue<string>("RabbitMQ:ClientName");
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -23,12 +38,12 @@ public class RabbitMQHostedService : IHostedService
 
         var factory = new ConnectionFactory
         {
-            HostName = "localhost",
-            Port = 5672,
-            UserName = "guest",
-            Password = "guest",
-            VirtualHost = "/",
-            ClientProvidedName = "EventConsumer"
+            HostName = _hostName,
+            Port = _portNumber,
+            UserName = _userName,
+            Password = _password,
+            VirtualHost = _virtualHost,
+            ClientProvidedName = _clientProviderName
         };
 
         _connection = await factory.CreateConnectionAsync();
@@ -52,14 +67,14 @@ public class RabbitMQHostedService : IHostedService
                 {
                     var body = args.Body.ToArray();
                     var message = Encoding.UTF8.GetString(body);
-                    _logger.LogInformation("Received message from queue {QueueName}: {Message}", queueName, message);
+                    _logger.LogInformation("Received message from queue {QueueName}: {Message}", queueName, message); 
 
                     await ProcessMessage(queueName, message);
                     await channel.BasicAckAsync(args.DeliveryTag, multiple: false);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error processing message from queue {QueueName}", queueName);
+                    _logger.LogError(ex, "Error processing message from queue {QueueName}", queueName); // I would prefer to actually have a table to insert data here for every failed message and also save the exeception to help with debugging 
                     await channel.BasicNackAsync(args.DeliveryTag, multiple: false, requeue: false);
                 }
             };
@@ -116,7 +131,7 @@ public class RabbitMQHostedService : IHostedService
     {
         if (player == null) return;
 
-        _logger.LogInformation("Processing player creation: {PlayerId}", player.Id);
+        //_logger.LogInformation("Processing player creation: {PlayerId}", player.Id);
         await Task.CompletedTask;
     }
 }

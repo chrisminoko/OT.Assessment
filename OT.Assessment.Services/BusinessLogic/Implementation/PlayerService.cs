@@ -65,8 +65,8 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
             if (player == null)
                 throw new ArgumentNullException(nameof(player));
 
-            if (!await PlayerExists(player.Id))
-                throw new NotFoundException($"Player with ID {player.Id} not found");
+            //if (!await PlayerExists(player.Id))
+            //    throw new NotFoundException($"Player with ID {player.Id} not found");
 
             return await _repository.UpdateAsync(player);
         }

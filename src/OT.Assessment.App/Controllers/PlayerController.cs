@@ -19,39 +19,7 @@ namespace OT.Assessment.App.Controllers
             _playerService = playerService;
         }
 
-        [HttpPost]
-        [Route("AddPlayer")]
-        public async Task<IActionResult> CreatePlayerAsync([FromBody] Player player)
-        {
-            if (player == null)
-            {
-                return BadRequest("Player data is required.");
-            }
-
-            try
-            {
-                await _playerService.CreatePlayer(player);
-
-                return CreatedAtAction(nameof(CreatePlayerAsync), new { id = player.Id }, player);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "An error occurred while creating the player.");
-            }
-        }
-
-        [HttpGet]
-        [Route("GetPlayerbyId")]
-        public async Task<IActionResult> GetPlayerbyId(Guid Id) 
-        {
-         var response = await _playerService.GetPlayerById(Id);
-        if (response == null)
-            {
-                return BadRequest();
-            }
-        
-        return Ok(response);
-        }
+       
 
 
     }

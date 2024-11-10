@@ -34,7 +34,7 @@ namespace OT.Assessment.Services.Producer
                 var json = JsonSerializer.Serialize(message);
                 var body = Encoding.UTF8.GetBytes(json);
 
-                // Corrected BasicPublish call
+                
                 await channel.BasicPublishAsync(
                      exchange: "",
                      routingKey: QueueName.ToString(),
@@ -43,9 +43,9 @@ namespace OT.Assessment.Services.Producer
             }
             catch (Exception ex)
             {
-                // Log the error
+                
                 Console.WriteLine($"Error sending message: {ex.Message}");
-                throw; // Re-throw to let the caller handle it
+                throw; 
             }
         }
     }
