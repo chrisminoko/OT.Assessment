@@ -42,7 +42,7 @@ namespace OT.Assessment.App.Controllers
             {
 
                 return StatusCode(StatusCodes.Status503ServiceUnavailable,
-                new { error = "Service temporarily unavailable !" });
+                new { error = "Service temporarily unavailable " });
             }
            
         }
