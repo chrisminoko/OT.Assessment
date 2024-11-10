@@ -48,9 +48,7 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
             try
             {
 
-                var result = await _messageProducer.SendMessage(
-                    request,
-                    EventQueue.CasinoWager);
+                var result = await _messageProducer.SendMessage( request, EventQueue.CasinoWager);
 
                 if (result.IsSuccess) return new BaseResponse { IsSuccessful = false };
 
@@ -134,12 +132,43 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
         }
 
 
-        public Task<IEnumerable<TopSpenderDto>> GetTopSpendersAsync(int count)
+        public async Task<Result<IEnumerable<TopSpenderDto>>> GetTopSpendersAsync(int count)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@Count", count);
+
+                var topSpenders = await _repository.RunProcedureAsync<TopSpenderDto>("sp_GetTopSpenders", parameters);
+
+                return Result<IEnumerable<TopSpenderDto>>.Success(topSpenders);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving top spenders");
+                return Result<IEnumerable<TopSpenderDto>>.Failure("Failed to retrieve top spenders");
+            }
         }
 
+        private async Task UpdatePlayerStatsAsync(Guid accountId, decimal amount)
+        {
 
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@AccountId", accountId);
+                parameters.Add("@Amount", amount);
+
+                await _repository.RunProcedureAsync<int>(
+                    "sp_UpdatePlayerStats",
+                    parameters);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "something went wrong");
+             
+            }
+        }
 
         public async Task<BaseResponse> ProcessCasinoWagerCreationAsync(CasinoWager casinoWager)
         {
@@ -153,6 +182,8 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
 
                 if (result == 1)
                 {
+                   await UpdatePlayerStatsAsync(casinoWager.AccountId,casinoWager.Amount); // This can EOD process or we can be publishing an event everytime we process a casino wager we can immediately update player stats
+
                     return new BaseResponse { Id = casinoWager.WagerId, IsSuccessful = true, Message = "Very good", StatusCode = "" };
                 }
                 return new BaseResponse { Id = casinoWager.WagerId, IsSuccessful = false, Message = "", StatusCode = "" };

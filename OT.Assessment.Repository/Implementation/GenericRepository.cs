@@ -72,10 +72,9 @@ namespace OT.Assessment.Repository.Implementation
 
         }
 
-
-        public async Task<IEnumerable<T>> RunProcedureAsync(string procName, DynamicParameters parameters )
+        public async Task<IEnumerable<T>> RunProcedureAsync<T>(string procName, DynamicParameters parameters )
         {
-            return  await _unitOfWork.Queries.QueryAsync<T>( procName, parameters, commandType: CommandType.StoredProcedure);
+            return await _unitOfWork.Queries.QueryAsync<T>(procName, parameters,commandType:CommandType.StoredProcedure);
         }
 
         public async Task<PaginatedResponse<T>> RunProcedureWithPaginationAsync<T>( string procName, DynamicParameters parameters)

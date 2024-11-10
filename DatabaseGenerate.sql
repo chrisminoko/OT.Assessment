@@ -164,3 +164,53 @@ BEGIN
 
 END
 GO
+
+
+
+CREATE PROCEDURE [dbo].[sp_GetTopSpenders]
+	-- Add the parameters for the stored procedure here
+  @Count INT = 10
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+	 IF @Count <= 0
+        SET @Count = 10;
+    -- Insert statements for procedure here
+	 SELECT TOP (@Count)
+        p.AccountId,
+        p.Username,
+        ps.TotalAmount as TotalAmountSpend
+    FROM PlayerStats ps
+    INNER JOIN Players p ON ps.AccountId = p.AccountId
+    ORDER BY ps.TotalAmount DESC;
+END
+GO
+
+
+CREATE PROCEDURE [dbo].[sp_UpdatePlayerStats]
+	-- Add the parameters for the stored procedure here
+  @AccountId UNIQUEIDENTIFIER,
+  @Amount DECIMAL(18,4)
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+    -- Insert statements for procedure here
+	MERGE PlayerStats AS target
+    USING (SELECT @AccountId AS AccountId, @Amount AS Amount) AS source
+    ON target.AccountId = source.AccountId
+    WHEN MATCHED THEN
+        UPDATE SET 
+            TotalAmount = target.TotalAmount + source.Amount,
+            WagerCount = target.WagerCount + 1,
+            LastWagerDateTime = GETUTCDATE(),
+            LastCalculatedDateTime = GETUTCDATE()
+    WHEN NOT MATCHED THEN
+        INSERT (AccountId, TotalAmount, WagerCount, LastWagerDateTime, LastCalculatedDateTime,CreatedDate,LastModifiedDate)
+        VALUES (source.AccountId, source.Amount, 1, GETUTCDATE(), GETUTCDATE(),GETUTCDATE(),GETUTCDATE());
+END
+GO

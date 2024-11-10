@@ -10,7 +10,6 @@ namespace OT.Assessment.Model.Dto
     public class TopSpenderDto
     {
         public Guid AccountId { get; set; }
-        public decimal Amount { get; set; }
         public decimal TotalAmountSpend { get; set; }
     }
 }

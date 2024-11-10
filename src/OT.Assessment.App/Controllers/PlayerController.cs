@@ -79,6 +79,32 @@ namespace OT.Assessment.App.Controllers
         }
 
 
+        [HttpGet("topSpenders")]
+        [ProducesResponseType(typeof(IEnumerable<TopSpenderDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetTopSpenders([FromQuery] int count = 10)
+        {
+            try
+            {
+               
+
+                var result = await _playerService.GetTopSpendersAsync(count);
+                if (!result.IsSuccess)
+                {
+                  
+                    return StatusCode(500, new { success = false, message = result.Error});
+                }
+
+                return Ok(new   { success = true, data = result.Data });
+            }
+            catch (Exception ex)
+            {
+               
+                return StatusCode(500, new  { success = false, message = "An unexpected error occurred" });
+            }
+        }
+
         [HttpPost("AddPlayer")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -97,8 +123,7 @@ namespace OT.Assessment.App.Controllers
             catch (Exception)
             {
 
-                return StatusCode(StatusCodes.Status503ServiceUnavailable,
-                new { error = "Service temporarily unavailable" });
+                return StatusCode(StatusCodes.Status503ServiceUnavailable,  new { error = "Service temporarily unavailable" });
             }
 
         }
