@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using OT.Assessment.Core.Enums;
 using OT.Assessment.Model.Entities;
+using OT.Assessment.Services.BusinessLogic.Interfaces;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
@@ -9,6 +10,7 @@ using System.Text.Json;
 public class RabbitMQHostedService : IHostedService
 {
     private readonly ILogger<RabbitMQHostedService> _logger;
+    private readonly IPlayerService _playerService;
     private IConnection? _connection;
     private readonly IConfiguration _configuration;
     private readonly CancellationTokenSource _cancellationTokenSource;
@@ -19,7 +21,7 @@ public class RabbitMQHostedService : IHostedService
     private readonly string _virtualHost;
     private readonly string _clientProviderName;
 
-    public RabbitMQHostedService(ILogger<RabbitMQHostedService> logger, IConfiguration configuration)
+    public RabbitMQHostedService(ILogger<RabbitMQHostedService> logger, IConfiguration configuration, IPlayerService playerService)
     {
         _logger = logger;
         _cancellationTokenSource = new CancellationTokenSource();
@@ -30,6 +32,7 @@ public class RabbitMQHostedService : IHostedService
         _password = _configuration.GetValue<string>("RabbitMQ:Password");
         _virtualHost = _configuration.GetValue<string>("RabbitMQ:VirtualHost");
         _clientProviderName = _configuration.GetValue<string>("RabbitMQ:ClientName");
+        _playerService = playerService;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -119,6 +122,10 @@ public class RabbitMQHostedService : IHostedService
                 case EventQueue.CreatePlayer:
                     var player = JsonSerializer.Deserialize<Player>(message);
                     await ProcessCreatePlayer(player);
+                    break; 
+                case EventQueue.CasinoWager:
+                    var casionwager = JsonSerializer.Deserialize<CasinoWager>(message);
+                    await ProcessCasinoWager(casionwager);
                     break;
 
                 default:
@@ -128,6 +135,12 @@ public class RabbitMQHostedService : IHostedService
     }
 
     private async Task ProcessCreatePlayer(Player player)
+    {
+        if (player == null) return;
+
+        await Task.CompletedTask;
+    }
+    private async Task ProcessCasinoWager(CasinoWager player)
     {
         if (player == null) return;
 
