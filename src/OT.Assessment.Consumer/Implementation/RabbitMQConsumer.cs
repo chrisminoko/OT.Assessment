@@ -11,6 +11,7 @@ public class RabbitMQHostedService : IHostedService
 {
     private readonly ILogger<RabbitMQHostedService> _logger;
     private readonly IPlayerService _playerService;
+    private readonly IProviderService _providerService;
     private IConnection? _connection;
     private readonly IConfiguration _configuration;
     private readonly CancellationTokenSource _cancellationTokenSource;
@@ -21,7 +22,7 @@ public class RabbitMQHostedService : IHostedService
     private readonly string _virtualHost;
     private readonly string _clientProviderName;
 
-    public RabbitMQHostedService(ILogger<RabbitMQHostedService> logger, IConfiguration configuration, IPlayerService playerService)
+    public RabbitMQHostedService(ILogger<RabbitMQHostedService> logger, IConfiguration configuration, IPlayerService playerService, IProviderService providerService)
     {
         _logger = logger;
         _cancellationTokenSource = new CancellationTokenSource();
@@ -33,6 +34,7 @@ public class RabbitMQHostedService : IHostedService
         _virtualHost = _configuration.GetValue<string>("RabbitMQ:VirtualHost");
         _clientProviderName = _configuration.GetValue<string>("RabbitMQ:ClientName");
         _playerService = playerService;
+        _providerService = providerService;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -119,21 +121,14 @@ public class RabbitMQHostedService : IHostedService
         {
             switch (eventQueue)
             {
-                case EventQueue.CreatePlayer:
-                    var player = JsonSerializer.Deserialize<Player>(message);
-                    await _playerService.InsertPlayer(player);
-                    break; 
+               
                 case EventQueue.CasinoWager:
                     var casionwager = JsonSerializer.Deserialize<CasinoWager>(message);
-                    await  _playerService.InsertCasinoWagerAsync(casionwager);
+                    await  _playerService.ProcessCasinoWagerCreationAsync(casionwager);
                     break;  
                 case EventQueue.CreateProvider:
-                    var provider = JsonSerializer.Deserialize<Provider>(message);
-                    await  _playerService.InserProvider(provider);
-                    break;
-                case EventQueue.CreateGame:
-                    var game = JsonSerializer.Deserialize<Game>(message);
-                    await _playerService.InsertGame(game);
+                    var provider = JsonSerializer.Deserialize<Provider>(message); // I just added this so to demonstrate that it can process different topics
+                    await  _providerService.ProcessProviderCreationAsync(provider);
                     break;
 
                 default:
@@ -142,18 +137,7 @@ public class RabbitMQHostedService : IHostedService
         }
     }
 
-    private async Task ProcessCreatePlayer(Player player)
-    {
-        if (player == null) return;
 
-        await Task.CompletedTask;
-    }
-    private async Task ProcessCasinoWager(CasinoWager player)
-    {
-        if (player == null) return;
-
-        await Task.CompletedTask;
-    }
 }
 
 

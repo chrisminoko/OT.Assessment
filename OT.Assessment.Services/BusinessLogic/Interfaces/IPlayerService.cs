@@ -12,14 +12,10 @@ namespace OT.Assessment.Services.BusinessLogic.Interfaces
 {
     public interface IPlayerService
     {
-        Task<BaseResponse> CreateCasinoWagerAsync(CasinoWagerRequest request);
-        Task<BaseResponse> CreatePlayerAsync(PlayerCreateRequest request); 
-        Task<BaseResponse> CreateGameAsync(GameCreateRequest request);
-        Task<BaseResponse> CreateProviderAsync(ProviderCreateRequest request);
-        Task<BaseResponse> InsertCasinoWagerAsync(CasinoWager casinoWager);
-        Task<BaseResponse> InsertPlayer(Player player);
-        Task<BaseResponse> InsertGame(Game game);
-        Task<BaseResponse> InserProvider(Provider provider);
+        Task<BaseResponse> PublishCasinoWagerAsync(CasinoWagerRequest request);
+        Task<BaseResponse> ProcessCasinoWagerCreationAsync(CasinoWager casinoWager);
+
+        Task<BaseResponse> CreatePlayerAsync(PlayerCreateRequest player);
         Task<PaginatedResponse<PlayerWagerDto>> GetPlayerCasinoWagersAsync(Guid playerId, int pageSize, int page);
         Task<IEnumerable<TopSpenderDto>> GetTopSpendersAsync(int count);
         Task<Player> GetPlayerById(Guid id);

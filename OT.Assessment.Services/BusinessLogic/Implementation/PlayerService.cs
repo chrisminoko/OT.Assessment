@@ -1,5 +1,8 @@
-﻿using OT.Assessment.Core.Enums;
+﻿using AutoMapper;
+using Microsoft.Extensions.Logging;
+using OT.Assessment.Core.Enums;
 using OT.Assessment.Core.Helpers;
+using OT.Assessment.Core.ResponseMessages;
 using OT.Assessment.Model.Dto;
 using OT.Assessment.Model.Entities;
 using OT.Assessment.Model.Request;
@@ -25,42 +28,37 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
         private readonly GenericRepository<Provider> _providerRepository;
         private readonly GenericRepository<CasinoWager> _casinoWagerRepository;
         private readonly IMessageProducer _messageProducer;
-        public PlayerService(IUnitOfWork unitOfWork, IMessageProducer messageProducer)
+        private readonly ILogger<PlayerService> _logger;
+        private readonly IMapper _mapper;
+        public PlayerService(IUnitOfWork unitOfWork, IMessageProducer messageProducer, ILogger<PlayerService> logger, IMapper mapper)
         {
             _repository = new GenericRepository<Player>(unitOfWork);
             _casinoWagerRepository = new GenericRepository<CasinoWager>(unitOfWork);
             _providerRepository = new GenericRepository<Provider>(unitOfWork);
             _gameRepository = new GenericRepository<Game>(unitOfWork);
             _messageProducer = messageProducer;
+            _logger = logger;
+            _mapper = mapper;
         }
 
-        public async Task<BaseResponse> CreateCasinoWagerAsync(CasinoWagerRequest request)
+        public async Task<BaseResponse> PublishCasinoWagerAsync(CasinoWagerRequest request)
         {
             try
             {
-                request.CreatedDateTime = DateTime.Now;
-                var results = await _messageProducer.SendMessage(request, EventQueue.CasinoWager);
-                return new BaseResponse { Id = request.WagerId, IsSuccessful = true };
-            }
-            catch (Exception)
-            {
-                return new BaseResponse { Id= Guid.Empty,IsSuccessful= false };
-               
-            }
-        }
 
-        public async Task<BaseResponse> CreateGameAsync(GameCreateRequest request)
-        {
-            try
-            {
-               
-                var results = await _messageProducer.SendMessage(request, EventQueue.CreateGame);
-                return new BaseResponse { IsSuccessful = true };
-            }
-            catch (Exception)
-            {
-                return new BaseResponse { Id = Guid.Empty, IsSuccessful = false };
+                var result = await _messageProducer.SendMessage(
+                    request,
+                    EventQueue.CasinoWager);
 
+                if (result.IsSuccess) return new BaseResponse { IsSuccessful = false };
+
+                return new BaseResponse { IsSuccessful = result.IsSuccess, Message = Responses.FailedToPublish };
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, Responses.FailedToPublishCasinoWager);
+                return new BaseResponse { IsSuccessful = false };
             }
         }
 
@@ -68,31 +66,24 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
         {
             try
             {
+                var playerEntity = _mapper.Map<Player>(request);
+                playerEntity.AccountId = Guid.NewGuid();
+                playerEntity.CreatedDate = DateTime.UtcNow;
+                playerEntity.LastModifiedDate = DateTime.UtcNow;
 
-                var results = await _messageProducer.SendMessage(request, EventQueue.CreatePlayer);
-                return new BaseResponse { IsSuccessful = true };
+                var result = await _repository.CreateAsync(playerEntity);
+                if (result != 1)
+                    return new BaseResponse { IsSuccessful = false, Message = Responses.GeneralError };
+
+                return new BaseResponse { IsSuccessful = true, Message = Responses.GeneralSuccess };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return new BaseResponse { Id = Guid.Empty, IsSuccessful = false };
-
+                _logger.LogError(ex, Responses.ErrorCreatingPlayer);
+                throw new Exception(Responses.GeneralError, ex);
             }
         }
 
-        public async Task<BaseResponse> CreateProviderAsync(ProviderCreateRequest request)
-        {
-            try
-            {
-
-                var results = await _messageProducer.SendMessage(request, EventQueue.CreateProvider);
-                return new BaseResponse { IsSuccessful = true };
-            }
-            catch (Exception)
-            {
-                return new BaseResponse { Id = Guid.Empty, IsSuccessful = false };
-
-            }
-        }
 
         public async Task<Player> GetPlayerById(Guid id)
         {
@@ -109,29 +100,8 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
             throw new NotImplementedException();
         }
 
-        public async Task<BaseResponse> InserProvider(Provider provider)
-        {  try
-            {
 
-                provider.LastModifiedDate = DateTime.UtcNow;
-                provider.CreatedDate = DateTime.UtcNow;
-                provider.ProviderId = Guid.NewGuid();
-                var result = await _providerRepository.CreateAsync(provider);
-
-                if (result == 1)
-                {
-                    return new BaseResponse { Id = provider.ProviderId, IsSuccessful = true, Message = "", StatusCode = "" };
-                }
-                return new BaseResponse { IsSuccessful = false, Message = "", StatusCode = "" };
-            }
-            catch (Exception ex)
-            {
-
-                return new BaseResponse { IsSuccessful = false, Message = ex.Message, StatusCode = "" };
-            }
-        }
-
-        public async Task<BaseResponse> InsertCasinoWagerAsync(CasinoWager casinoWager)
+        public async Task<BaseResponse> ProcessCasinoWagerCreationAsync(CasinoWager casinoWager)
         {
             try
             {
@@ -154,51 +124,7 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
     
         }
 
-        public async Task<BaseResponse> InsertGame(Game game)
-        {
-            try
-            {
-                
-                game.LastModifiedDate = DateTime.UtcNow;
-                game.CreatedDate = DateTime.UtcNow;
-                game.GameId = Guid.NewGuid();
-                var result = await _gameRepository.CreateAsync(game);
-
-                if (result == 1)
-                {
-                    return new BaseResponse { Id = game.GameId, IsSuccessful = true, Message = "", StatusCode = "" };
-                }
-                return new BaseResponse { IsSuccessful = false, Message = "", StatusCode = "" };
-            }
-            catch (Exception ex)
-            {
-
-                return new BaseResponse {  IsSuccessful = false, Message = ex.Message, StatusCode = "" };
-            }
-        }
-
-        public async Task<BaseResponse> InsertPlayer(Player player)
-        {
-            try
-            {
-
-                player.LastModifiedDate = DateTime.UtcNow;
-                player.CreatedDate = DateTime.UtcNow;
-                player.AccountId = Guid.NewGuid();
-                var result = await _repository.CreateAsync(player);
-
-                if (result == 1)
-                {
-                    return new BaseResponse { Id = player.AccountId, IsSuccessful = true, Message = "hey", StatusCode = "" };
-                }
-                return new BaseResponse { IsSuccessful = false, Message = "", StatusCode = "" };
-            }
-            catch (Exception ex)
-            {
-
-                return new BaseResponse { IsSuccessful = false, Message = ex.Message, StatusCode = "" };
-            }
-        }
+       
 
         public async Task<bool> PlayerExists(Guid id)
         {
@@ -215,8 +141,5 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
        
     }
 
-    public class NotFoundException : Exception
-    {
-        public NotFoundException(string message) : base(message) { }
-    }
+   
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using OT.Assessment.App.Extensions;
@@ -20,6 +21,7 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
+builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.ConfigureDependencyInjections(configuration);
 
 var app = builder.Build();

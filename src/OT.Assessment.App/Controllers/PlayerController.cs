@@ -31,7 +31,7 @@ namespace OT.Assessment.App.Controllers
         {
             try
             {
-                var result = await _playerService.CreateCasinoWagerAsync(request);
+                var result = await _playerService.PublishCasinoWagerAsync(request);
                 if (result.IsSuccessful)
                 {
                     return Ok(result);
@@ -47,11 +47,11 @@ namespace OT.Assessment.App.Controllers
            
         }
 
-        [HttpPost("player")]
+        [HttpPost("AddPlayer")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
-        public async Task<IActionResult> CreatePlayer([FromBody] PlayerCreateRequest request)
+        public async Task<IActionResult> CreatePlayerAsync([FromBody] PlayerCreateRequest request)
         {
             try
             {
@@ -70,6 +70,8 @@ namespace OT.Assessment.App.Controllers
             }
 
         }
+
+
 
     }
 }
