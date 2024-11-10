@@ -104,3 +104,63 @@ VALUES (N'20241110114726_AddedEntitiesMapping', N'8.0.10');
 GO
 
 COMMIT;
+
+
+-- ================================================
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		Chris Minoko
+-- Create date: <Create Date,,>
+-- Description:	<Description,,>
+-- =============================================
+CREATE PROCEDURE [dbo].[sp_GetPlayerCasinoWagers]
+	-- Add the parameters for the stored procedure here
+    @PlayerId UNIQUEIDENTIFIER,
+    @PageSize INT = 10,
+    @Page INT = 1,
+    @TotalRecords INT OUTPUT,
+    @TotalPages INT OUTPUT
+AS
+BEGIN
+	
+	SET NOCOUNT ON;
+	IF @PageSize <= 0
+        SET @PageSize = 10;
+        
+    IF @Page <= 0
+        SET @Page = 1;
+
+	SELECT @TotalRecords = COUNT(1)
+    FROM CasinoWagers cw
+    WHERE cw.AccountId = @PlayerId;
+  
+   SET @TotalPages = CEILING(CAST(@TotalRecords AS FLOAT) / @PageSize);
+
+       ;WITH PaginatedWagers AS (
+        SELECT 
+            cw.WagerId,
+            g.GameName AS Game,
+            p.ProviderName AS Provider,
+            cw.Amount,
+            cw.CreatedDate ,
+            ROW_NUMBER() OVER (ORDER BY cw.CreatedDate DESC) AS RowNum
+        FROM CasinoWagers cw
+        INNER JOIN Games g ON cw.GameId = g.GameId
+        INNER JOIN Providers p ON g.ProviderId = p.ProviderId
+        WHERE cw.AccountId = @PlayerId
+    )
+    SELECT 
+        WagerId,
+        Game,
+        Provider,
+        Amount,
+        CreatedDate
+    FROM PaginatedWagers
+    WHERE RowNum BETWEEN ((@Page - 1) * @PageSize + 1) AND (@Page * @PageSize)
+    ORDER BY CreatedDate DESC;
+
+END
+GO
