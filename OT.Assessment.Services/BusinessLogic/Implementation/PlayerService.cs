@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Dapper;
 using Microsoft.Extensions.Logging;
 using OT.Assessment.Core.Enums;
 using OT.Assessment.Core.Helpers;
@@ -13,6 +14,7 @@ using OT.Assessment.Services.BusinessLogic.Interfaces;
 using OT.Assessment.Services.Producer;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
@@ -85,20 +87,58 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
         }
 
 
-        public async Task<Player> GetPlayerById(Guid id)
+        public async Task<Player> GetPlayerById(Guid id,string collumn)
         {
-            return await _repository.GetByIdAsync(id);
+            return await _repository.GetByIdAsync(id,collumn);
         }
 
-        public Task<PaginatedResponse<PlayerWagerDto>> GetPlayerCasinoWagersAsync(Guid playerId, int pageSize, int page)
+        public async Task<PaginatedResponse<PlayerWagerDto>> GetPlayerCasinoWagersAsync(Guid playerId, int pageSize, int page)
         {
-            throw new NotImplementedException();
+           
+            pageSize = pageSize > 0 ? pageSize : 10;
+            page = page > 0 ? page : 1;
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@PlayerId", playerId);
+            parameters.Add("@PageSize", pageSize);
+            parameters.Add("@Page", page);
+            parameters.Add("@TotalRecords", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            parameters.Add("@TotalPages", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+            try
+            {
+                
+                var result = await _repository.RunProcedureWithPaginationAsync<PlayerWagerDto>("sp_GetPlayerCasinoWagers", parameters);
+
+                int totalRecords = parameters.Get<int>("@TotalRecords");
+                int totalPages = parameters.Get<int>("@TotalPages");
+
+                var data = result?.Data ?? new List<PlayerWagerDto>();
+
+              
+                return new PaginatedResponse<PlayerWagerDto>
+                {
+                    Data = data,
+                    TotalPage = totalPages,
+                    Total = totalRecords,
+                    Page = page,
+                    PageSize = pageSize
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching player casino wagers");
+
+                throw new Exception("Failed to retrieve player casino wagers.", ex);
+            }
         }
+
 
         public Task<IEnumerable<TopSpenderDto>> GetTopSpendersAsync(int count)
         {
             throw new NotImplementedException();
         }
+
 
 
         public async Task<BaseResponse> ProcessCasinoWagerCreationAsync(CasinoWager casinoWager)
@@ -126,14 +166,14 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
 
        
 
-        public async Task<bool> PlayerExists(Guid id)
+        public async Task<bool> PlayerExists(Guid id,string column)
         {
-            return await _repository.ExistsAsync(id);
+            return await _repository.ExistsAsync(id, column);
         }
 
         private async Task<bool> ValidateCasinoWagerRequest(CasinoWager request)
         {
-            var IplayerValide = await _repository.ExistsAsync(request.AccountId);
+            var IplayerValide = await _repository.ExistsAsync(request.AccountId,"AccountId");
             if (!IplayerValide) return false;
 
             return true;

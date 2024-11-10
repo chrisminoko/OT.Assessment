@@ -38,7 +38,6 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
             try
             {
                 var gameEntity = _mapper.Map<Game>(request);
-                gameEntity.ProviderId = Guid.NewGuid();
                 gameEntity.CreatedDate = DateTime.UtcNow;
                 gameEntity.LastModifiedDate = DateTime.UtcNow;
 

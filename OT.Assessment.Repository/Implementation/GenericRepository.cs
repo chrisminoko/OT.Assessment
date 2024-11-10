@@ -1,8 +1,11 @@
-﻿using OT.Assessment.Core.Helpers;
+﻿using Dapper;
+using OT.Assessment.Core.Helpers;
+using OT.Assessment.Model.Response;
 using OT.Assessment.Repository.Interface;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -18,19 +21,19 @@ namespace OT.Assessment.Repository.Implementation
         public GenericRepository(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _tableName = GetTableName(); // Assumes table name matches class name
+            _tableName = GetTableName(); 
         }
 
-        public async Task<T> GetByIdAsync(object id)
+        public async Task<T> GetByIdAsync(object id  ,string Collumn)
         {
-            var query = $"SELECT * FROM {_tableName} WHERE Id = @Id";
+            var query = $"SELECT * FROM {_tableName} WITH(NOLOCK) WHERE Id = @Id"; //I dont like this , it too expensive
             return await _unitOfWork.Queries.QueryFirstOrDefaultAsync<T>(query, new { Id = id });
         }
 
-        public async Task<bool> ExistsAsync(object id)
+        public async Task<bool> ExistsAsync(object id , string Collumn)
         {
-            var query = $"SELECT COUNT(1) FROM {_tableName} WHERE Id = @Id";
-            var count = await _unitOfWork.Commands.ExecuteScalarAsync<int>(query, new { Id = id });
+            var query = $"SELECT COUNT(1) FROM {_tableName} WITH(NOLOCK) WHERE {Collumn} = @Id ";
+            var count = await _unitOfWork.Commands.ExecuteScalarAsync<int>(query, new { Collumn = id });
         
            
             return count > 0;
@@ -38,7 +41,7 @@ namespace OT.Assessment.Repository.Implementation
 
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-            var query = $"SELECT * FROM {_tableName}";
+            var query = $"SELECT * FROM {_tableName} WITH(NOLOCK)";
             return await _unitOfWork.Queries.QueryAsync<T>(query);
         }
 
@@ -70,45 +73,36 @@ namespace OT.Assessment.Repository.Implementation
         }
 
 
-        public async Task<int> UpdateAsync(T entity)
+        public async Task<IEnumerable<T>> RunProcedureAsync(string procName, DynamicParameters parameters )
         {
-            var properties = typeof(T).GetProperties()
-                .Where(p => p.Name != "Id")
-                .ToList();
-
-            var setClause = string.Join(", ", properties.Select(p => $"{p.Name} = @{p.Name}"));
-            var query = $"UPDATE {_tableName} SET {setClause} WHERE Id = @Id";
-
-            return await _unitOfWork.Commands.ExecuteAsync(query, entity);
+            return  await _unitOfWork.Queries.QueryAsync<T>( procName, parameters, commandType: CommandType.StoredProcedure);
         }
 
-        public async Task<int> DeleteAsync(object id)
+        public async Task<PaginatedResponse<T>> RunProcedureWithPaginationAsync<T>( string procName, DynamicParameters parameters)
         {
-            var query = $"DELETE FROM {_tableName} WHERE Id = @Id";
-            return await _unitOfWork.Commands.ExecuteAsync(query, new { Id = id });
-        }
+            try
+            {
+                var data = await _unitOfWork.Queries.QueryAsync<T>(
+                    procName,
+                    parameters,
+                    commandType: CommandType.StoredProcedure);
 
-        public async Task<IEnumerable<T>> RunProcedureAsync(string procName, object parameters = null)
-        {
-            return await _unitOfWork.Queries.QueryAsync<T>($"EXEC {procName}", parameters);
-        }
-
-        public async Task<T> RunProcedureSingleAsync(string procName, object parameters = null)
-        {
-            return await _unitOfWork.Queries.QueryFirstOrDefaultAsync<T>($"EXEC {procName}", parameters);
-        }
-
-        public async Task<int> RunProcedureNonQueryAsync(string procName, object parameters = null)
-        {
-            return await _unitOfWork.Commands.ExecuteAsync($"EXEC {procName}", parameters);
+                return new PaginatedResponse<T>
+                {
+                    Data = data,
+                    Total = parameters.Get<int>("@TotalRecords"),
+                    TotalPage = parameters.Get<int>("@TotalPages")
+                };
+            }
+            catch (Exception)
+            {
+                throw; 
+            }
         }
 
         private string GetTableName()
         {
-            // Get the type of T
             var type = typeof(T);
-
-            // Try to get the TableAttribute from System.ComponentModel.DataAnnotations.Schema
             var tableAttribute = type.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.TableAttribute>();
 
             // If the attribute exists, use its Name property, otherwise fall back to the class name
