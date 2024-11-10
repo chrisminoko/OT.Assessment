@@ -121,11 +121,19 @@ public class RabbitMQHostedService : IHostedService
             {
                 case EventQueue.CreatePlayer:
                     var player = JsonSerializer.Deserialize<Player>(message);
-                    await ProcessCreatePlayer(player);
+                    await _playerService.InsertPlayer(player);
                     break; 
                 case EventQueue.CasinoWager:
                     var casionwager = JsonSerializer.Deserialize<CasinoWager>(message);
-                    await ProcessCasinoWager(casionwager);
+                    await  _playerService.InsertCasinoWagerAsync(casionwager);
+                    break;  
+                case EventQueue.CreateProvider:
+                    var provider = JsonSerializer.Deserialize<Provider>(message);
+                    await  _playerService.InserProvider(provider);
+                    break;
+                case EventQueue.CreateGame:
+                    var game = JsonSerializer.Deserialize<Game>(message);
+                    await _playerService.InsertGame(game);
                     break;
 
                 default:

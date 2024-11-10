@@ -9,6 +9,8 @@ namespace OT.Assessment.Core.Enums
     public enum EventQueue
     {
         CreatePlayer,
-        CasinoWager
+        CasinoWager,
+        CreateGame,
+        CreateProvider
     }
 }

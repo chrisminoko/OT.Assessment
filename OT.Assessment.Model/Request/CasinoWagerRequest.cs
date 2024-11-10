@@ -11,6 +11,8 @@ namespace OT.Assessment.Model.Request
         public Guid WagerId { get; set; }
         public string Theme { get; set; } = null!;
         public string Provider { get; set; } = null!;
+        public Guid ProviderId { get; set; }
+        public Guid GameId { get; set; }
         public string GameName { get; set; } = null!;
         public Guid TransactionId { get; set; }
         public Guid BrandId { get; set; }

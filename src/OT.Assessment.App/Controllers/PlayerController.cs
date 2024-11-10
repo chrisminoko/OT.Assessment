@@ -47,6 +47,29 @@ namespace OT.Assessment.App.Controllers
            
         }
 
+        [HttpPost("player")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        public async Task<IActionResult> CreatePlayer([FromBody] PlayerCreateRequest request)
+        {
+            try
+            {
+                var result = await _playerService.CreatePlayerAsync(request);
+                if (result.IsSuccessful)
+                {
+                    return Ok(result);
+                }
+                return BadRequest(new BaseResponse { IsSuccessful = true, Message = result.Message });
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                new { error = "Service temporarily unavailable" });
+            }
+
+        }
 
     }
 }

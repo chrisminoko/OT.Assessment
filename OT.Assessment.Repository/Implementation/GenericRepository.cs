@@ -2,6 +2,7 @@
 using OT.Assessment.Repository.Interface;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -30,6 +31,8 @@ namespace OT.Assessment.Repository.Implementation
         {
             var query = $"SELECT COUNT(1) FROM {_tableName} WHERE Id = @Id";
             var count = await _unitOfWork.Commands.ExecuteScalarAsync<int>(query, new { Id = id });
+        
+           
             return count > 0;
         }
 
@@ -41,16 +44,31 @@ namespace OT.Assessment.Repository.Implementation
 
         public async Task<int> CreateAsync(T entity)
         {
-            var properties = typeof(T).GetProperties()
-                //.Where(p => p.Name != "Id")
-                .ToList();
-            
-            var columns = string.Join(", ", properties.Select(p => p.Name));
-            var parameters = string.Join(", ", properties.Select(p => $"@{p.Name}"));
+            try
+            {
+                var properties = typeof(T).GetProperties()
+                .Where(p => !Attribute.IsDefined(p, typeof(NotMappedAttribute))
+                && !p.GetMethod!.IsVirtual
+                && p.GetValue(entity) != null)
+    .           ToList();
 
-            var query = $"INSERT INTO {_tableName} ({columns}) VALUES ({parameters})";
-            return await _unitOfWork.Commands.ExecuteAsync(query, entity);
+                var columns = string.Join(", ", properties.Select(p => p.Name));
+                var parameters = string.Join(", ", properties.Select(p => $"@{p.Name}"));
+
+                var query = $"INSERT INTO {_tableName} ({columns}) VALUES ({parameters})";
+                await _unitOfWork.Commands.ExecuteAsync(query, entity);
+                _unitOfWork.Commit();
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                _unitOfWork.Rollback();
+                return -1;
+                throw;
+            }
+
         }
+
 
         public async Task<int> UpdateAsync(T entity)
         {

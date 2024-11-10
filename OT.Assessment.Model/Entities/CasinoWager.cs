@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace OT.Assessment.Model.Entities
 {
-    [TableAttribute("CasinoWagerS")]
+    [TableAttribute("CasinoWagers")]
     public class CasinoWager : BaseEntity
     {
         public Guid WagerId { get; set; }

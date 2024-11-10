@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace OT.Assessment.Model.Entities
 {
-    [TableAttribute("PlayerStats")]
+    [TableAttribute("Providers")]
     public class Provider : BaseEntity
     {
         public Guid ProviderId { get; set; }
