@@ -1,11 +1,13 @@
 ﻿using Dapper;
 using OT.Assessment.Core.Helpers;
+using OT.Assessment.Core.ResponseMessages;
 using OT.Assessment.Model.Response;
 using OT.Assessment.Repository.Interface;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -24,28 +26,41 @@ namespace OT.Assessment.Repository.Implementation
             _tableName = GetTableName(); 
         }
 
-        public async Task<T> GetByIdAsync(object id  ,string Collumn)
+        public async Task<T> GetByIdAsync(object id  ,string column)
         {
-            var query = $"SELECT * FROM {_tableName} WITH(NOLOCK) WHERE Id = @Id"; //I dont like this , it too expensive
+            var query = $"SELECT * FROM {_tableName} WITH(NOLOCK) WHERE {column} = @Id"; //I dont like this , it too expensive
             return await _unitOfWork.Queries.QueryFirstOrDefaultAsync<T>(query, new { Id = id });
         }
 
-        public async Task<bool> ExistsAsync(object id , string Collumn)
+        public async Task<bool> ExistsAsync(object id, string column)
         {
-            var query = $"SELECT COUNT(1) FROM {_tableName} WITH(NOLOCK) WHERE {Collumn} = @Id ";
-            var count = await _unitOfWork.Commands.ExecuteScalarAsync<int>(query, new { Collumn = id });
-        
-           
-            return count > 0;
-        }
+            try
+            {
+                var query = $"SELECT COUNT(1) FROM {_tableName} WITH(NOLOCK) WHERE {column} = @Id";
+                var count = await _unitOfWork.Commands.ExecuteScalarAsync<int>(query, new { Id = id });
 
+                return count > 0;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-            var query = $"SELECT * FROM {_tableName} WITH(NOLOCK)";
-            return await _unitOfWork.Queries.QueryAsync<T>(query);
+            try
+            {
+                var query = $"SELECT * FROM {_tableName} WITH(NOLOCK)";
+                return await _unitOfWork.Queries.QueryAsync<T>(query);
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
 
-        public async Task<int> CreateAsync(T entity)
+        public async Task<BaseResponse> CreateAsync(T entity)
         {
             try
             {
@@ -61,13 +76,13 @@ namespace OT.Assessment.Repository.Implementation
                 var query = $"INSERT INTO {_tableName} ({columns}) VALUES ({parameters})";
                 await _unitOfWork.Commands.ExecuteAsync(query, entity);
                 _unitOfWork.Commit();
-                return 1;
+                return new BaseResponse { IsSuccessful = true ,Message=Responses.GeneralSuccess};
             }
             catch (Exception ex)
             {
                 _unitOfWork.Rollback();
-                return -1;
-                throw ex;
+                return new BaseResponse { IsSuccessful = false, Message = ex.Message };
+             
             }
 
         }

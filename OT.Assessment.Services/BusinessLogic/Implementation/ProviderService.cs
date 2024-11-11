@@ -43,7 +43,7 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
                 gameEntity.LastModifiedDate = DateTime.UtcNow;
 
                 var result = await _gameRepository.CreateAsync(gameEntity);
-                if (result != 1)
+                if (result.IsSuccessful)
                     return new BaseResponse { IsSuccessful = true, Message = Responses.FailedToPublish };
 
                 return new BaseResponse { IsSuccessful = true, Message = Responses.GeneralSuccess };
@@ -55,11 +55,6 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
             }
         }
 
-        public Task<bool> IsValid(Guid providerId)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<BaseResponse> ProcessProviderCreationAsync(Provider request)
         {
             try
@@ -69,10 +64,10 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
                 request.LastModifiedDate = DateTime.UtcNow;
 
                 var result = await _providerRepository.CreateAsync(request);
-                if (result != 1)
-                    return new BaseResponse { IsSuccessful = true, Message = Responses.FailedToPublish };
+                if (result.IsSuccessful)
+                    return new BaseResponse { IsSuccessful = true, Message =Responses.GeneralSuccess };
 
-                return new BaseResponse { IsSuccessful = true, Message = Responses.GeneralSuccess };
+                return new BaseResponse { IsSuccessful = false, Message = Responses.GeneralError };
             }
             catch (Exception ex)
             {

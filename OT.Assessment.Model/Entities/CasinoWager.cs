@@ -17,6 +17,7 @@ namespace OT.Assessment.Model.Entities
         public Guid BrandId { get; set; }
         public Guid? ExternalReferenceId { get; set; }
         public Guid? TransactionTypeId { get; set; }
+        public string GameName { get; set; }
         public decimal Amount { get; set; }
         public int NumberOfBets { get; set; }
         public string? SessionData { get; set; }

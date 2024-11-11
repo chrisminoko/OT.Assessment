@@ -106,6 +106,22 @@ GO
 COMMIT;
 
 
+
+-- ========================Added a new collumn on [CasinoWagers] table ==========
+BEGIN TRANSACTION;
+GO
+
+ALTER TABLE [CasinoWagers] ADD [GameName] nvarchar(max) NOT NULL DEFAULT N'';
+GO
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20241111065905_AddedGameNameColoumn', N'8.0.10');
+GO
+
+COMMIT;
+GO
+-- ========================Added a new collumn on [CasinoWagers] table ==========
+
 -- ================================================
 SET ANSI_NULLS ON
 GO

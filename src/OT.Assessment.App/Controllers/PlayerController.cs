@@ -50,33 +50,33 @@ namespace OT.Assessment.App.Controllers
         [HttpGet("{playerId}/casino")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
-        public async Task<IActionResult> GetPlayerWagers( [FromRoute] Guid playerId, [FromQuery] PaginationRequest request)
+        public async Task<IActionResult> GetPlayerWagers([FromRoute] Guid playerId, [FromQuery] PaginationRequest request)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { error = "Invalid request parameters." });
+            }
+
             try
             {
-                // Validate request
-                if (!ModelState.IsValid)
+                
+                var result = await _playerService.GetPlayerCasinoWagersAsync(playerId, request.PageSize, request.Page);
+
+                if (result.Data == null || !result.Data.Any())
                 {
-                    return StatusCode(StatusCodes.Status400BadRequest, new { error = "Service temporarily unavailable" });
+                    return NotFound(new BaseResponse { IsSuccessful = false, Message = "No wagers found for the specified player." });
                 }
-
-                // Get wagers
-                var result = await _playerService.GetPlayerCasinoWagersAsync( playerId,request.PageSize,  request.Page);
-
-                if (!result.Data.Any())
-                    return StatusCode(500, new BaseResponse { IsSuccessful = false, Message = "" });
-
-                //if (!result.Data.Data.Any())
-                //    return NotFound(new BaseResponse { IsSuccessful = false, Message = "" });
 
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = "Service temporarily unavailable" });
             }
         }
+
 
 
         [HttpGet("topSpenders")]
@@ -98,10 +98,10 @@ namespace OT.Assessment.App.Controllers
 
                 return Ok(new   { success = true, data = result.Data });
             }
-            catch (Exception ex)
+            catch (Exception )
             {
                
-                return StatusCode(500, new  { success = false, message = "An unexpected error occurred" });
+                return StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = "Service temporarily unavailable" });
             }
         }
 
@@ -127,7 +127,6 @@ namespace OT.Assessment.App.Controllers
             }
 
         }
-
 
 
     }

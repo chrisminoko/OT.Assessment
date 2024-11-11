@@ -23,6 +23,7 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.ConfigureDependencyInjections(configuration);
+builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 

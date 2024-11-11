@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Dapper;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using OT.Assessment.Core.Enums;
 using OT.Assessment.Core.Helpers;
@@ -32,7 +33,8 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
         private readonly IMessageProducer _messageProducer;
         private readonly ILogger<PlayerService> _logger;
         private readonly IMapper _mapper;
-        public PlayerService(IUnitOfWork unitOfWork, IMessageProducer messageProducer, ILogger<PlayerService> logger, IMapper mapper)
+        private readonly IMemoryCache _cache;
+        public PlayerService(IUnitOfWork unitOfWork, IMessageProducer messageProducer, ILogger<PlayerService> logger, IMapper mapper, IMemoryCache cache)
         {
             _repository = new GenericRepository<Player>(unitOfWork);
             _casinoWagerRepository = new GenericRepository<CasinoWager>(unitOfWork);
@@ -41,6 +43,7 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
             _messageProducer = messageProducer;
             _logger = logger;
             _mapper = mapper;
+            _cache = cache;
         }
 
         public async Task<BaseResponse> PublishCasinoWagerAsync(CasinoWagerRequest request)
@@ -72,7 +75,7 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
                 playerEntity.LastModifiedDate = DateTime.UtcNow;
 
                 var result = await _repository.CreateAsync(playerEntity);
-                if (result != 1)
+                if (result.IsSuccessful)
                     return new BaseResponse { IsSuccessful = false, Message = Responses.GeneralError };
 
                 return new BaseResponse { IsSuccessful = true, Message = Responses.GeneralSuccess };
@@ -125,9 +128,9 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while fetching player casino wagers");
+                _logger.LogError(ex, Responses.GeneralError);
 
-                throw new Exception("Failed to retrieve player casino wagers.", ex);
+                throw new Exception(Responses.GeneralError, ex);
             }
         }
 
@@ -145,8 +148,8 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving top spenders");
-                return Result<IEnumerable<TopSpenderDto>>.Failure("Failed to retrieve top spenders");
+                _logger.LogError(ex, Responses.GeneralError);
+                return Result<IEnumerable<TopSpenderDto>>.Failure(Responses.GeneralError);
             }
         }
 
@@ -174,42 +177,64 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
         {
             try
             {
-                //var validations = await ValidateCasinoWagerRequest(casinoWager);
-                casinoWager.WagerId= Guid.NewGuid();
+               
+                var isUserAccountValid = await _repository.ExistsAsync(casinoWager.AccountId, "AccountId");
+                var isGameValid = await _gameRepository.ExistsAsync(casinoWager.GameId, "GameId");
+                var isDuplicateWager = await _casinoWagerRepository.ExistsAsync(casinoWager.TransactionId, "TransactionId");
+
+                if (isDuplicateWager)
+                {
+                    _logger.LogError(Responses.Duplicatewager + $"{casinoWager.TransactionId}");
+                    return new BaseResponse { IsSuccessful = false, Message = Responses.Duplicatewager };
+                }
+
+                if (!isUserAccountValid || !isGameValid)
+                {
+                    _logger.LogWarning(Responses.InvalidAccountOrGameID);
+                    return new BaseResponse { IsSuccessful = false, Message = Responses.InvalidAccountOrGameID };
+                }
+
+                if (!_cache.TryGetValue($"GameDetail_{casinoWager.GameId}", out Game gameDetail))
+                {
+                
+                    gameDetail = await _gameRepository.GetByIdAsync(casinoWager.GameId, "GameId");
+
+                    var cacheOptions = new MemoryCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
+                    };
+
+                    _cache.Set($"GameDetail_{casinoWager.GameId}", gameDetail, cacheOptions);
+                }
+
+                casinoWager.GameName = gameDetail.GameName;
+
+               
+                casinoWager.WagerId = Guid.NewGuid();
                 casinoWager.LastModifiedDate = DateTime.UtcNow;
                 casinoWager.CreatedDate = DateTime.UtcNow;
+
+               
                 var result = await _casinoWagerRepository.CreateAsync(casinoWager);
 
-                if (result == 1)
+                if (result.IsSuccessful)
                 {
-                   await UpdatePlayerStatsAsync(casinoWager.AccountId,casinoWager.Amount); // This can EOD process or we can be publishing an event everytime we process a casino wager we can immediately update player stats
-
-                    return new BaseResponse { Id = casinoWager.WagerId, IsSuccessful = true, Message = "Very good", StatusCode = "" };
+                    await UpdatePlayerStatsAsync(casinoWager.AccountId, casinoWager.Amount);
+                    return new BaseResponse  { Id = casinoWager.WagerId, IsSuccessful = true,Message = Responses.GeneralSuccess, StatusCode = "201" };
                 }
-                return new BaseResponse { Id = casinoWager.WagerId, IsSuccessful = false, Message = "", StatusCode = "" };
+                else
+                {
+                    _logger.LogError(result.Message, "something went wrong");
+                    return new BaseResponse{Id = casinoWager.WagerId,IsSuccessful = false,Message = Responses.GeneralError,  StatusCode = "500"  };
+                }
             }
             catch (Exception ex)
             {
-
-                return new BaseResponse { Id = casinoWager.WagerId, IsSuccessful = false, Message = ex.Message, StatusCode = "" };
+                _logger.LogError(ex, Responses.GeneralError);
+                return new BaseResponse   { IsSuccessful = false, Message = Responses.GeneralError,  StatusCode = "500" };
             }
-    
         }
 
-       
-
-        public async Task<bool> PlayerExists(Guid id,string column)
-        {
-            return await _repository.ExistsAsync(id, column);
-        }
-
-        private async Task<bool> ValidateCasinoWagerRequest(CasinoWager request)
-        {
-            var IplayerValide = await _repository.ExistsAsync(request.AccountId,"AccountId");
-            if (!IplayerValide) return false;
-
-            return true;
-        }
        
     }
 

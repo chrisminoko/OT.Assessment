@@ -14,6 +14,5 @@ namespace OT.Assessment.Services.BusinessLogic.Interfaces
         Task<BaseResponse> PublishProviderCreationAsync (ProviderCreateRequest request);
         Task<BaseResponse> ProcessProviderCreationAsync(Provider request);
         Task<BaseResponse> CreateGameAsync(GameCreateRequest request);
-        Task<bool> IsValid(Guid id);
     }
 }

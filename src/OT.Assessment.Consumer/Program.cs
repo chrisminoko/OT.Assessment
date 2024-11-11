@@ -30,6 +30,7 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<IRabbitMqConnection>(new RabbitMqConnection()); 
         services.AddScoped<IMessageProducer, RabbitMqProducer>();
         services.AddScoped<IProviderService, ProviderService>();
+        services.AddMemoryCache();
         services.AddAutoMapper(typeof(Program));
 
     })

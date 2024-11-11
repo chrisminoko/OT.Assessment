@@ -19,7 +19,6 @@ namespace OT.Assessment.Services.BusinessLogic.Interfaces
         Task<PaginatedResponse<PlayerWagerDto>> GetPlayerCasinoWagersAsync(Guid playerId, int pageSize, int page);
         Task<Result<IEnumerable<TopSpenderDto>>> GetTopSpendersAsync(int count);
         Task<Player> GetPlayerById(Guid id, string column);
-        Task<bool> PlayerExists(Guid id,string column);
        
     }
 }
