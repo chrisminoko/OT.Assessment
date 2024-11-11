@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OT.Assessment.Model.Dto;
 using OT.Assessment.Model.Request;
 using OT.Assessment.Model.Response;
 using OT.Assessment.Services.BusinessLogic.Interfaces;
@@ -63,6 +64,17 @@ namespace OT.Assessment.App.Controllers
                 new { error = "Service temporarily unavailable" });
             }
 
+        }
+
+        [HttpGet("{providerId}/games")]
+        public async Task<ActionResult<ProviderDto>> GetProviderWithGames(Guid providerId)
+        {
+            var result = await _providerService.GetProviderWithGamesAsync(providerId);
+
+            if (result == null)
+                return NotFound();
+
+            return Ok(result);
         }
     }
 }

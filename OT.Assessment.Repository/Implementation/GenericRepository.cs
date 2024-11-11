@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using OT.Assessment.Core.Helpers;
 using OT.Assessment.Core.ResponseMessages;
+using OT.Assessment.Model.Dto;
 using OT.Assessment.Model.Response;
 using OT.Assessment.Repository.Interface;
 using System;
@@ -85,6 +86,26 @@ namespace OT.Assessment.Repository.Implementation
              
             }
 
+        }
+
+        public async Task<ProviderDto?> GetProviderWithGamesAsync(Guid providerId)
+        {
+           
+
+            using var multi = await _unitOfWork.Queries.QueryMultipleAsync(
+                "sp_GetProviderWithGames",
+                new { ProviderId = providerId },
+                commandType: CommandType.StoredProcedure);
+
+            var provider = await multi.ReadFirstOrDefaultAsync<ProviderDto>();
+
+            if (provider == null)
+                return null;
+
+            var games = await multi.ReadAsync<GameDto>();
+            provider.Games = games.ToList();
+
+            return provider;
         }
 
         public async Task<IEnumerable<T>> RunProcedureAsync<T>(string procName, DynamicParameters parameters )

@@ -1,4 +1,5 @@
-﻿using OT.Assessment.Model.Entities;
+﻿using OT.Assessment.Model.Dto;
+using OT.Assessment.Model.Entities;
 using OT.Assessment.Model.Request;
 using OT.Assessment.Model.Response;
 using System;
@@ -14,5 +15,6 @@ namespace OT.Assessment.Services.BusinessLogic.Interfaces
         Task<BaseResponse> PublishProviderCreationAsync (ProviderCreateRequest request);
         Task<BaseResponse> ProcessProviderCreationAsync(Provider request);
         Task<BaseResponse> CreateGameAsync(GameCreateRequest request);
+        Task<ProviderDto?> GetProviderWithGamesAsync(Guid providerId);
     }
 }

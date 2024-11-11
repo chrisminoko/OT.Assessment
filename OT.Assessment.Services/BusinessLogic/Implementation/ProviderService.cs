@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using OT.Assessment.Core.Enums;
 using OT.Assessment.Core.ResponseMessages;
+using OT.Assessment.Model.Dto;
 using OT.Assessment.Model.Entities;
 using OT.Assessment.Model.Request;
 using OT.Assessment.Model.Response;
@@ -53,6 +54,12 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
                 _logger.LogError(ex, Responses.ErrorCreatingProvider);
                 throw new Exception(Responses.GeneralError, ex);
             }
+        }
+
+        public Task<ProviderDto?> GetProviderWithGamesAsync(Guid providerId)
+        {
+            var dto= _gameRepository.GetProviderWithGamesAsync(providerId);
+            return dto;
         }
 
         public async Task<BaseResponse> ProcessProviderCreationAsync(Provider request)

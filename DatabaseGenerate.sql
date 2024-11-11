@@ -230,3 +230,36 @@ BEGIN
         VALUES (source.AccountId, source.Amount, 1, GETUTCDATE(), GETUTCDATE(),GETUTCDATE(),GETUTCDATE());
 END
 GO
+
+
+
+
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[sp_GetProviderWithGames]
+
+ @ProviderId UNIQUEIDENTIFIER
+AS
+BEGIN
+
+	SET NOCOUNT ON;
+
+ SELECT 
+        p.ProviderId,
+        p.ProviderName
+    FROM dbo.Providers p with(nolock)
+    WHERE p.ProviderId = @ProviderId;
+
+    SELECT 
+        g.GameId,
+        g.ProviderId,
+        g.GameName,
+        g.Theme
+    FROM dbo.Games g with(nolock)
+    WHERE g.ProviderId = @ProviderId;
+END
+GO

@@ -6,6 +6,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Dapper.SqlMapper;
 
 namespace OT.Assessment.Repository.Implementation
 {
@@ -25,6 +26,15 @@ namespace OT.Assessment.Repository.Implementation
             return await _connection.QueryAsync<T>(query, parameters, _transaction, commandTimeout, commandType);
         }
 
+        public async Task<GridReader> QueryMultipleAsync(string query, object parameters = null, CommandType commandType = CommandType.Text, int? commandTimeout = null)
+        {
+            return await _connection.QueryMultipleAsync(
+                query,
+                parameters,
+                _transaction,
+                commandTimeout,
+                commandType);
+        }
         public async Task<T> QueryFirstOrDefaultAsync<T>(string query, object parameters = null, CommandType commandType = CommandType.Text, int? commandTimeout = null)
         {
             return await _connection.QueryFirstOrDefaultAsync<T>(query, parameters, _transaction, commandTimeout, commandType);
