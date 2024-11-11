@@ -16,6 +16,8 @@ namespace OT.Assessment.Core.ResponseMessages
         public const string ErrorCreatingPlayer = "Error creating player";
         public const string GeneralSuccess = "Operation successful"; 
         public const string Duplicatewager  = "Duplicate wager detected for Transaction ID:";
-        public const string InvalidAccountOrGameID  = "Invalid account or game ID.";
+        public const string InvalidAccountOrGameID  = "Invalid account or game ID."; 
+        public const string InValideProvider  = "Invalid provider ID: {ProviderId}.";
+        public const string ErrorFetchingProvider  = "Error getting provider {ProviderId}";
     }
 }

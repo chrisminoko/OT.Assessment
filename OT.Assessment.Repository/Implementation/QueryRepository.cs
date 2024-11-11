@@ -35,19 +35,11 @@ namespace OT.Assessment.Repository.Implementation
                 commandTimeout,
                 commandType);
         }
+
         public async Task<T> QueryFirstOrDefaultAsync<T>(string query, object parameters = null, CommandType commandType = CommandType.Text, int? commandTimeout = null)
         {
             return await _connection.QueryFirstOrDefaultAsync<T>(query, parameters, _transaction, commandTimeout, commandType);
         }
 
-        public async Task<T> QuerySingleAsync<T>(string query, object parameters = null, CommandType commandType = CommandType.Text, int? commandTimeout = null)
-        {
-            return await _connection.QuerySingleAsync<T>(query, parameters, _transaction, commandTimeout, commandType);
-        }
-
-        public async Task<IEnumerable<T>> QueryStoredProcedure<T>(string procName, object parameters = null, int? commandTimeout = null)
-        {
-            return await QueryAsync<T>(procName, parameters, CommandType.StoredProcedure, commandTimeout);
-        }
     }
 }

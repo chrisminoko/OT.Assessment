@@ -70,11 +70,7 @@ namespace OT.Assessment.App.Controllers
         public async Task<ActionResult<ProviderDto>> GetProviderWithGames(Guid providerId)
         {
             var result = await _providerService.GetProviderWithGamesAsync(providerId);
-
-            if (result == null)
-                return NotFound();
-
-            return Ok(result);
+            return result == null ? NotFound() : Ok(result);
         }
     }
 }

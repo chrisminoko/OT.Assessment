@@ -56,11 +56,27 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
             }
         }
 
-        public Task<ProviderDto?> GetProviderWithGamesAsync(Guid providerId)
+        public async Task<ProviderDto?> GetProviderWithGamesAsync(Guid providerId)
         {
-            var dto= _gameRepository.GetProviderWithGamesAsync(providerId);
-            return dto;
+            try
+            {
+                var isValideProvider = await _providerRepository.ExistsAsync(providerId, "ProviderId");
+                if (providerId == Guid.Empty || !isValideProvider)
+                {
+                    _logger.LogWarning(Responses.InValideProvider, providerId);
+                    return null;
+                }
+
+                return await _gameRepository.GetProviderWithGamesAsync(providerId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, Responses.ErrorFetchingProvider, providerId);
+                throw;
+            }
         }
+
+
 
         public async Task<BaseResponse> ProcessProviderCreationAsync(Provider request)
         {

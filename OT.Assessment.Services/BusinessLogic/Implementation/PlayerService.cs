@@ -53,7 +53,7 @@ namespace OT.Assessment.Services.BusinessLogic.Implementation
 
                 var result = await _messageProducer.SendMessage( request, EventQueue.CasinoWager);
 
-                if (result.IsSuccess) return new BaseResponse { IsSuccessful = false };
+                if (result.IsSuccess) return new BaseResponse { IsSuccessful = false, Message = Responses.GeneralSuccess };
 
                 return new BaseResponse { IsSuccessful = result.IsSuccess, Message = Responses.FailedToPublish };
 

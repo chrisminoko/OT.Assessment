@@ -47,19 +47,6 @@ namespace OT.Assessment.Repository.Implementation
                 throw;
             }
         }
-        public async Task<IEnumerable<T>> GetAllAsync()
-        {
-            try
-            {
-                var query = $"SELECT * FROM {_tableName} WITH(NOLOCK)";
-                return await _unitOfWork.Queries.QueryAsync<T>(query);
-            }
-            catch (Exception ex)
-            {
-
-                throw;
-            }
-        }
 
         public async Task<BaseResponse> CreateAsync(T entity)
         {

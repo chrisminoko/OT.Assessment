@@ -31,15 +31,6 @@ namespace OT.Assessment.Repository.Implementation
         {
             return await _connection.ExecuteScalarAsync<T>(query, parameters, _transaction, commandTimeout, commandType);
         }
-
-        public async Task<int> ExecuteStoredProcedure(string procName, object parameters = null, int? commandTimeout = null)
-        {
-            return await ExecuteAsync(procName, parameters, CommandType.StoredProcedure, commandTimeout);
-        }
-
-        public async Task<T> ExecuteStoredProcedureScalar<T>(string procName, object parameters = null, int? commandTimeout = null)
-        {
-            return await ExecuteScalarAsync<T>(procName, parameters, CommandType.StoredProcedure, commandTimeout);
-        }
+      
     }
 }
