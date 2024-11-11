@@ -9,6 +9,7 @@ I've organized the  project using the Repository pattern and separated functiona
 - **OT.Assessment.Core**: Contains enums, extension methods, helper classes, and static response classes.
 - **OT.Assessment.Repository**: Includes all generic repository classes and the unit of work.
 - **OT.Assessment.Services**: Contains business logic and the producer/publisher, which I considered separating but decided against to avoid an overkill.
+- docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 -e RABBITMQ_DEFAULT_USER=guest -e RABBITMQ_DEFAULT_PASS=guest rabbitmq:3-management please run that command to set up rabbitmq
 
 
 ## Thoughts Regarding this request
@@ -47,3 +48,9 @@ The lest i did was to just check if the publishing to the queue was successful a
 I watched a lot of videos on how to do this here, I did not really know some of the best practices on how to implement it. I watched this here : https://www.youtube.com/watch?v=bfVddTJNiAw&t=2827s ,https://www.youtube.com/watch?v=LHYOBHR2Ms4&t=629s,
 They really helped set up the foundation but none of them did it in way that is dynamic to consume different topics: so I did some googling and with some of my experience with Kafka , I tried implemnting a similar pattern am used too:
 I would have wanted to add retrial but I want to finish before Monday - My upcomming week will be busy.
+
+
+
+## General overview Structure :
+
+I made a lot of changes, we can discuss if am sucessful , There are design choice I disagree with myself but it works . And a

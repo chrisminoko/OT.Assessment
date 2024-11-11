@@ -16,7 +16,7 @@ namespace OT.Assessment.App.Controllers
         //GET api/player/{playerId}/wagers
 
         //GET api/player/topSpenders?count=10
-        //
+    
         private readonly IPlayerService _playerService;
         public PlayerController(IPlayerService playerService)
         {
